@@ -11,7 +11,9 @@ fn main() {
         for line in lines {
             match line {
                 Ok(chars) => {
-                    if let Ok(partial_digits) = get_clear_values(chars) {
+                    let dictionary: HashMap<String, String> = get_word_digit_mapping();
+                    let parsed_chars = replace_word_numbers_with_digits(chars, dictionary);
+                    if let Ok(partial_digits) = get_clear_values(parsed_chars) {
                         sum = sum + partial_digits;
                     }
                 }
@@ -28,6 +30,53 @@ where
 {
     let file = File::open(file_name)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+fn get_word_digit_mapping() -> HashMap<String, String> {
+    let mut result: HashMap<String, String> = HashMap::new();
+
+    result.insert("one".to_string(), "o1e".to_string());
+    result.insert("two".to_string(), "t2o".to_string());
+    result.insert("three".to_string(), "t3e".to_string());
+    result.insert("four".to_string(), "f4r".to_string());
+    result.insert("five".to_string(), "f5e".to_string());
+    result.insert("six".to_string(), "s6x".to_string());
+    result.insert("seven".to_string(), "s7n".to_string());
+    result.insert("eight".to_string(), "e8t".to_string());
+    result.insert("nine".to_string(), "n9e".to_string());
+
+    result
+}
+
+fn replace_word_numbers_with_digits(data: String, dictionary: HashMap<String, String>) -> String {
+    let mut result: String = String::from(data);
+    let mut found_positions: HashMap<usize, String> = HashMap::new();
+    let data_size: usize = result.len();
+    for key in dictionary.keys() {
+        let position = result.find(key);
+        if let Some(found_position) = position {
+            found_positions.insert(found_position, key.to_string());
+        }
+    }
+
+    for n in 0..data_size {
+        if found_positions.contains_key(&n) {
+            match found_positions.get(&n) {
+                Some(replacement_key) => {
+                    let replacement_value = dictionary.get(replacement_key);
+                    match replacement_value {
+                        Some(replacement_word) => {
+                            result = result.replace(replacement_key, replacement_word);
+                        }
+                        None => println!("Error during fetching dictionary entry"),
+                    }
+                }
+                None => println!("Error during getting dictionary positons"),
+            }
+        }
+    }
+
+    result
 }
 
 fn get_clear_values(blured_data: String) -> std::result::Result<i32, ParseIntError> {
