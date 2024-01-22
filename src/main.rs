@@ -18,11 +18,12 @@ fn main() {
                         sum = sum + partial_digits;
                     }
                 }
-                Err(_) => print!("Error occured"),
+                Err(e) => eprintln!("Error occurred: {}", e),
             }
         }
     }
-    println!("Final result is: {sum}")
+    println!("Final result is: {}", sum);
+
 }
 
 fn read_lines<P>(file_name: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -50,31 +51,10 @@ fn get_word_digit_mapping() -> HashMap<String, String> {
 }
 
 fn replace_word_numbers_with_digits(data: String, dictionary: HashMap<String, String>) -> String {
-    let mut result: String = String::from(data);
-    let mut found_positions: HashMap<usize, String> = HashMap::new();
-    let data_size: usize = result.len();
-    for key in dictionary.keys() {
-        let position = result.find(key);
-        if let Some(found_position) = position {
-            found_positions.insert(found_position, key.to_string());
-        }
-    }
-
-    for n in 0..data_size {
-        if found_positions.contains_key(&n) {
-            match found_positions.get(&n) {
-                Some(replacement_key) => {
-                    let replacement_value = dictionary.get(replacement_key);
-                    match replacement_value {
-                        Some(replacement_word) => {
-                            result = result.replace(replacement_key, replacement_word);
-                        }
-                        None => println!("Error during fetching dictionary entry"),
-                    }
-                }
-                None => println!("Error during getting dictionary positons"),
-            }
-        }
+    let mut result: String = data;
+    
+    for (key,value) in &dictionary {
+        result = result.replace(key, value)
     }
 
     result
